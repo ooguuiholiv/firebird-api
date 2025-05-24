@@ -1,9 +1,19 @@
 import express from "express";
 import { queryFirebird } from "./db.js";
 import dotenv from "dotenv";
+import cors from "cors";
+
 dotenv.config();
 
 const app = express();
+
+const corsOptions = {
+  origin: "https://control.mbaconstrutora.cloud/",
+  methods: "GET",
+  allowedHeaders: "Content-Type,Authorization",
+};
+
+app.use(cors(corsOptions))
 app.use(express.json());
 
 app.get("/clientes", async (req, res) => {
