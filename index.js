@@ -17,20 +17,24 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Middleware para validar ORIGIN e REFERER
-app.use((req, res, next) => {
-  const origin = req.get("origin");
-  const referer = req.get("referer");
-  const allowedOrigin = "https://control.mbaconstrutora.cloud";
+// Middleware para validar estritamente o ORIGIN
+const allowedOrigin = "https://control.mbaconstrutora.cloud";
 
-  if (
-    (origin && origin !== allowedOrigin) ||
-    (referer && !referer.startsWith(allowedOrigin))
-  ) {
-    console.warn("Bloqueado acesso não autorizado:", { origin, referer });
+app.use((req, res, next) => {
+  const requestOrigin = req.get("origin");
+
+  // Bloqueia se o Origin não for exatamente o permitido.
+  // Isso inclui casos onde Origin é null (acesso direto) ou qualquer outro valor.
+  if (requestOrigin !== allowedOrigin) {
+    console.warn(
+      `Bloqueado acesso não autorizado. Origin recebido: "${requestOrigin}". Referer: "${req.get(
+        "referer"
+      )}". IP: ${req.ip}.`
+    );
     return res.status(403).json({ error: "Acesso não autorizado." });
   }
 
+  // Se chegou aqui, o Origin é o permitido.
   next();
 });
 
@@ -44,7 +48,7 @@ app.get("/clientes", async (req, res) => {
     WHERE TMOV.CODTMV = '2.2.13';
   `;
 
-  console.log("Rota /clientes acessada.");
+  console.log(`Rota /clientes acessada. Origin: ${req.get("origin")}`); // Adicionado log de Origin
   try {
     const dados = await queryFirebird(sql);
     res.json(dados.length ? dados : { message: "Nenhum cliente encontrado." });
@@ -69,7 +73,7 @@ app.get("/funcionarios", async (req, res) => {
     ORDER BY FCFO.NOMEFANTASIA ASC;
   `;
 
-  console.log("Rota /funcionarios acessada.");
+  console.log(`Rota /funcionarios acessada. Origin: ${req.get("origin")}`); // Adicionado log de Origin
   try {
     const dados = await queryFirebird(sql);
     res.json(
