@@ -43,22 +43,18 @@ app.get("/clientes", async (req, res) => {
 
 app.get("/funcionarios", async (req, res) => {
   const sqlQueryFuncionarios = `
-          SELECT    
-            fcfo.nomefantasia as nome_completo, 
-            fcfo.cgccfo as cpf,
-            fcfo.inscrestadual as identidade,
-            fcfo.telefone,
-            TRIM(
-                COALESCE(FCFO.RUA, '') ||
-                CASE WHEN FCFO.NUMERO IS NOT NULL AND FCFO.NUMERO <> '' THEN ' ' || FCFO.NUMERO ELSE '' END ||
-                CASE WHEN FCFO.BAIRRO IS NOT NULL AND FCFO.BAIRRO <> '' THEN ', ' || FCFO.BAIRRO ELSE '' END ||
-                CASE WHEN FCFO.CIDADE IS NOT NULL AND FCFO.CIDADE <> '' THEN ' - ' || FCFO.CIDADE ELSE '' END
-            ) AS ENDERECO_COMPLETO,
-            fcfo.dataop1 as admissao
-          FROM
-              FCFO
-          WHERE
-             FCFO.CODCFO LIKE 'T%'
+          SELECT
+    fcfo.nomefantasia as nome_completo,
+    fcfo.cgccfo as cpf,
+    fcfo.inscrestadual as identidade,
+    fcfo.telefone,
+    fcfo.dataop1 as admissao
+FROM
+    FCFO
+WHERE
+    FCFO.CODCFO LIKE 'T%'
+ORDER BY 
+    FCFO.NOMEFANTASIA ASC;
       `;
 
   console.log("Rota /funcionarios acessada.");
