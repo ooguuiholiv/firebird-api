@@ -8,23 +8,39 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-  origin: "https://control.mbaconstrutora.cloud", 
-  methods: ["GET"],
+  origin: [
+    "https://control.mbaconstrutora.cloud",
+    "https://app.bubble.io",
+    "https://bubble.io/apiservice/doapicallfromserver",
+    "https://api.segment.io/v1/t",
+    "https://api.sprig.com/sdk/1/visitors/0a91641e-112b-4a53-9ab2-67e7d6300b07/events",
+    "https://api.segment.io/v1/m",
+  ],
+  methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
+
+app.set("trust proxy", true);
 
 app.use(cors(corsOptions));
 app.use(express.json());
 
-const allowedOrigin = "https://control.mbaconstrutora.cloud";
+const allowedOrigin = [
+  "https://bubble.io/apiservice/doapicallfromserver",
+  "https://control.mbaconstrutora.cloud",
+  "https://app.bubble.io",
+  "https://api.segment.io/v1/t",
+  "https://api.sprig.com/sdk/1/visitors/0a91641e-112b-4a53-9ab2-67e7d6300b07/events",
+  "https://api.segment.io/v1/m",
+];
 
 app.use((req, res, next) => {
   const requestOrigin = req.get("origin");
-  if (requestOrigin !== allowedOrigin) {
+  if (!allowedOrigin.includes(requestOrigin)) {
     console.warn(
       `Bloqueado acesso não autorizado. Origin recebido: "${requestOrigin}". Referer: "${req.get(
         "referer"
-      )}". IP: ${req.ip}.`
+      )}". IP: ${req.ip}`
     );
     return res.status(403).json({ error: "Acesso não autorizado." });
   }
@@ -34,9 +50,9 @@ app.use((req, res, next) => {
 
 app.get("/clientes", async (req, res) => {
   const sql = `
-    SELECT DISTINCT   
-      fcfo.nomefantasia, 
-      fcfo.cgccfo as CNPJ_CLIENTE   
+    SELECT DISTINCT
+      fcfo.nomefantasia,
+      fcfo.cgccfo as CNPJ_CLIENTE
     FROM TMOV
     LEFT JOIN FCFO ON TMOV.CODCFO = FCFO.CODCFO
     WHERE TMOV.CODTMV = '2.2.13';
@@ -85,19 +101,20 @@ app.get("/funcionarios", async (req, res) => {
 
 app.get("/contratos", async (req, res) => {
   const sql = `
-    SELECT DISTINCT   
+    SELECT DISTINCT
       tmov.numeromov as contrato,
       tmov.segundonumero as NS,
       tmov.campolivre1 as plano,
       tmov.serie,
-      fcfo.nomefantasia AS CLIENTE, 
-      fcfo.cgccfo as CNPJ_CLIENTE   
+      fcfo.nomefantasia AS CLIENTE,
+      fcfo.cgccfo as CNPJ_CLIENTE
     FROM TMOV
     LEFT JOIN FCFO ON TMOV.CODCFO = FCFO.CODCFO
-    WHERE TMOV.CODTMV = '2.2.13';
+    WHERE TMOV.CODTMV = '2.2.13'
+    AND TMOV.STATUS <> 'C';
   `;
 
-  console.log(`Rota /clientes acessada. Origin: ${req.get("origin")}`); // Adicionado log de Origin
+  console.log(`Rota /contratos acessada. Origin: ${req.get("origin")}`); // Adicionado log de Origin
   try {
     const dados = await queryFirebird(sql);
     res.json(dados.length ? dados : { message: "Nenhum cliente encontrado." });
@@ -108,8 +125,6 @@ app.get("/contratos", async (req, res) => {
       .json({ error: "Erro ao consultar banco.", details: err.message });
   }
 });
-
-
 
 const port = process.env.PORT || 3000;
 app.listen(port, () =>
