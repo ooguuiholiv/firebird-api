@@ -1,17 +1,24 @@
-# Usa uma imagem oficial do Node.js
 FROM node:20
 
-# Define o diretório de trabalho dentro do container
+# Instala Firebird client e dependências
+RUN apt-get update && apt-get install -y \
+    firebird-dev \
+    firebird3.0-utils \
+    libfbclient2 \
+    unixodbc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Define diretório de trabalho
 WORKDIR /usr/src/app
 
-# Copia os arquivos da sua API pro container
+# Copia arquivos da API
 COPY . .
 
-# Instala as dependências
+# Instala dependências do Node.js
 RUN npm install
 
-# Expõe a porta usada pela API (ajuste se for diferente)
-EXPOSE 3000
+# Expõe a porta da API
+EXPOSE 7000
 
-# Inicia a API
+# Inicia a aplicação
 CMD ["npm", "start"]
