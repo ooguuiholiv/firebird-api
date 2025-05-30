@@ -80,7 +80,7 @@ app.get("/alertas", async (req, res) => {
   console.log(`Rota /alertas acessada. Origin: ${req.get("origin")}`);
   try {
     const dados = await queryFirebird(sql);
-    res.json(dados.length ? dados : { message: "Nenhum cliente encontrado." });
+    res.json(dados.length ? {dados} : { message: "Nenhum cliente encontrado." });
   } catch (err) {
     console.error("Erro em /alertas:", err.message);
     res
