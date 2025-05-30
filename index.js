@@ -73,7 +73,8 @@ app.get("/clientes", async (req, res) => {
 
 app.get("/alertas", async (req, res) => {
   const sql = `
-    SELECT * from gagendacompromisso;
+    SELECT GCOMPROMISSO.*, GAGENDACOMPROMISSO.*  FROM GAGENDACOMPROMISSO
+    LEFT JOIN GCOMPROMISSO ON GAGENDACOMPROMISSO.IDCOMPROMISSO = GCOMPROMISSO.IDCOMPROMISSO;
   `;
 
   console.log(`Rota /alertas acessada. Origin: ${req.get("origin")}`);
