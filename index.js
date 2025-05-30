@@ -58,7 +58,7 @@ app.get("/clientes", async (req, res) => {
     WHERE TMOV.CODTMV = '2.2.13';
   `;
 
-  console.log(`Rota /clientes acessada. Origin: ${req.get("origin")}`); // Adicionado log de Origin
+  console.log(`Rota /clientes acessada. Origin: ${req.get("origin")}`); 
   try {
     const dados = await queryFirebird(sql);
     res.json(dados.length ? dados : { message: "Nenhum cliente encontrado." });
@@ -69,6 +69,25 @@ app.get("/clientes", async (req, res) => {
       .json({ error: "Erro ao consultar banco.", details: err.message });
   }
 });
+
+
+app.get("/alertas", async (req, res) => {
+  const sql = `
+    SELECT * from gagendacompromisso;
+  `;
+
+  console.log(`Rota /alertas acessada. Origin: ${req.get("origin")}`);
+  try {
+    const dados = await queryFirebird(sql);
+    res.json(dados.length ? dados : { message: "Nenhum cliente encontrado." });
+  } catch (err) {
+    console.error("Erro em /alertas:", err.message);
+    res
+      .status(500)
+      .json({ error: "Erro ao consultar banco.", details: err.message });
+  }
+});
+
 
 app.get("/funcionarios", async (req, res) => {
   const sql = `
@@ -85,7 +104,7 @@ app.get("/funcionarios", async (req, res) => {
     ORDER BY FCFO.NOMEFANTASIA ASC;
   `;
 
-  console.log(`Rota /funcionarios acessada. Origin: ${req.get("origin")}`); // Adicionado log de Origin
+  console.log(`Rota /funcionarios acessada. Origin: ${req.get("origin")}`); 
   try {
     const dados = await queryFirebird(sql);
     res.json(
@@ -114,7 +133,7 @@ app.get("/contratos", async (req, res) => {
     AND TMOV.STATUS <> 'C';
   `;
 
-  console.log(`Rota /contratos acessada. Origin: ${req.get("origin")}`); // Adicionado log de Origin
+  console.log(`Rota /contratos acessada. Origin: ${req.get("origin")}`); 
   try {
     const dados = await queryFirebird(sql);
     res.json(dados.length ? dados : { message: "Nenhum cliente encontrado." });
