@@ -225,18 +225,14 @@ LEFT JOIN fccusto ON fccusto.cod = p.ccusto_tratado;
 
 app.get("/v2/centro-custo", async (req, res) => {
   const sql = `
-    WITH Preferido_CentroCusto AS (
+  WITH Preferido_CentroCusto AS (
   SELECT
     flan.idlan,
-    CASE 
-      WHEN frc.ccusto IS NOT NULL THEN frc.ccusto
-      WHEN fe.ccusto IS NOT NULL THEN fe.ccusto
-      ELSE flan.ccusto
-    END AS ccusto_tratado,
+    COALESCE(frc.ccusto, fe.ccusto, flan.ccusto) AS ccusto_tratado,
     frc.ccusto AS rateio_de_cc,
     CASE 
-      WHEN (CASE WHEN flan.historico IS NULL THEN '' ELSE flan.historico END) CONTAINING 'BAIXA PARCIAL' THEN flan.valorbaixado
-      WHEN (CASE WHEN flan.historico IS NULL THEN '' ELSE flan.historico END) CONTAINING 'IMP_RET' THEN flan.valorbaixado
+      WHEN (flan.historico IS NOT NULL AND flan.historico CONTAINING 'BAIXA PARCIAL') THEN flan.valorbaixado
+      WHEN (flan.historico IS NOT NULL AND flan.historico CONTAINING 'IMP_RET') THEN flan.valorbaixado
       ELSE frc.valor
     END AS valor_cc,
     flan.ccusto AS cc,
@@ -253,23 +249,21 @@ app.get("/v2/centro-custo", async (req, res) => {
   ) fe ON fe.numerodocumento = 
     CASE 
       WHEN flan.statuslan = 'B' THEN 
-        CASE WHEN flan.numerodocumento IS NULL THEN '' ELSE flan.numerodocumento END || '/' || 
-        CASE WHEN flan.parcela IS NULL THEN '' ELSE CAST(flan.parcela AS VARCHAR(10)) END
-      ELSE 
-        CASE WHEN flan.numerodocumento IS NULL THEN '' ELSE flan.numerodocumento END
+        CAST(flan.numerodocumento AS VARCHAR(100) CHARACTER SET UTF8) || '/' || CAST(COALESCE(CAST(flan.parcela AS VARCHAR(10)), '') AS VARCHAR(10) CHARACTER SET UTF8)
+      ELSE CAST(flan.numerodocumento AS VARCHAR(100) CHARACTER SET UTF8)
     END
     AND fe.cnpjcpf = flan.codcfo
 )
 SELECT 
   flan.datavencimento, 
   flan.databaixa,
-  CASE 
-    WHEN flan.statuslan = 'B' THEN 
-      CASE WHEN flan.numerodocumento IS NULL THEN '' ELSE flan.numerodocumento END || '/' || 
-      CASE WHEN flan.parcela IS NULL THEN '' ELSE CAST(flan.parcela AS VARCHAR(10)) END
-    ELSE 
-      CASE WHEN flan.numerodocumento IS NULL THEN '' ELSE flan.numerodocumento END
-  END AS numerodocumento, 
+  CAST(
+    CASE 
+      WHEN flan.statuslan = 'B' THEN 
+        CAST(flan.numerodocumento AS VARCHAR(100) CHARACTER SET UTF8) || '/' || CAST(COALESCE(CAST(flan.parcela AS VARCHAR(10)), '') AS VARCHAR(10) CHARACTER SET UTF8)
+      ELSE CAST(flan.numerodocumento AS VARCHAR(100) CHARACTER SET UTF8)
+    END
+  AS VARCHAR(200) CHARACTER SET UTF8) AS numerodocumento, 
   flan.parcela,
   fcfo.nomefantasia,
   fcfo.cgccfo AS CNPJ_CPF, 
@@ -290,7 +284,6 @@ FROM flan
 LEFT JOIN fcfo ON fcfo.codcfo = flan.codcfo
 LEFT JOIN Preferido_CentroCusto p ON p.idlan = flan.idlan
 LEFT JOIN fccusto ON fccusto.cod = p.ccusto_tratado;
-
   `;
 
   console.log(`Rota /v2/centro-custo acessada. Origin: ${req.get("origin")}`);
