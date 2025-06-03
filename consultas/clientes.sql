@@ -1,0 +1,6 @@
+ SELECT DISTINCT
+      fcfo.nomefantasia,
+      fcfo.cgccfo as CNPJ_CLIENTE
+    FROM TMOV
+    LEFT JOIN FCFO ON TMOV.CODCFO = FCFO.CODCFO
+    WHERE TMOV.CODTMV = '2.2.13';
