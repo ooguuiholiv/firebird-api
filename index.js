@@ -154,13 +154,11 @@ app.get("/v1/centro-custo", async (req, res) => {
         flan.idlan,
         COALESCE(frc.ccusto, fe.ccusto, flan.ccusto) AS ccusto_tratado,
         frc.ccusto AS rateio_de_cc,
-
         CASE 
             WHEN flan.historico CONTAINING 'BAIXA PARCIAL' THEN flan.valorbaixado
             WHEN  FLAN.HISTORICO CONTAINING 'IMP_RET' THEN flan.valorbaixado
             ELSE frc.valor
         END AS valor_cc,
-
         flan.ccusto AS cc,
         fe.ccusto AS cc_extrato
     FROM flan
@@ -191,23 +189,19 @@ SELECT
     fcfo.cgccfo AS CNPJ_CPF, 
     flan.valororiginal,
     flan.valorbaixado,
-
     p.rateio_de_cc AS Rateio_de_CC,
     p.valor_cc AS VALOR_CC,
     p.cc AS CC,
     p.cc_extrato AS CC_extrato,
     p.ccusto_tratado AS CC_tratado,
-
     CASE 
         WHEN flan.pagrec = 'P' THEN 'PAGAR'
         WHEN flan.pagrec = 'R' THEN 'RECEBER'
         ELSE 'DESCONHECIDO' 
     END AS Tipo_Transacao,
-
     -- fccusto.descricao AS Descricao_Centro_Custo,
-    flan.statuslan AS Status_do_lancamento,
+    flan.statuslan AS Status_do_lancamento
     -- flan.historico
-
 FROM flan
 LEFT JOIN fcfo ON fcfo.codcfo = flan.codcfo
 LEFT JOIN Preferido_CentroCusto p ON p.idlan = flan.idlan
@@ -236,13 +230,11 @@ app.get("/v2/centro-custo", async (req, res) => {
         flan.idlan,
         CAST(COALESCE(frc.ccusto, fe.ccusto, flan.ccusto) AS VARCHAR(100) CHARACTER SET WIN1252) AS ccusto_tratado,
         frc.ccusto AS rateio_de_cc,
-
         CASE 
             WHEN flan.historico CONTAINING 'BAIXA PARCIAL' THEN flan.valorbaixado
             WHEN flan.historico CONTAINING 'IMP_RET' THEN flan.valorbaixado
             ELSE frc.valor
         END AS valor_cc,
-
         flan.ccusto AS cc,
         fe.ccusto AS cc_extrato
     FROM flan
@@ -273,23 +265,19 @@ SELECT
     fcfo.cgccfo AS CNPJ_CPF, 
     flan.valororiginal,
     flan.valorbaixado,
-
     p.rateio_de_cc AS Rateio_de_CC,
     p.valor_cc AS VALOR_CC,
     p.cc AS CC,
     p.cc_extrato AS CC_extrato,
     p.ccusto_tratado AS CC_tratado,
-
     CASE 
         WHEN flan.pagrec = 'P' THEN 'PAGAR'
         WHEN flan.pagrec = 'R' THEN 'RECEBER'
         ELSE 'DESCONHECIDO' 
     END AS Tipo_Transacao,
-
-    -- fccusto.descricao AS Descricao_Centro_Custo,
-    flan.statuslan AS Status_do_lancamento,
-  -- flan.historico
-
+    --fccusto.descricao AS Descricao_Centro_Custo,
+    flan.statuslan AS Status_do_lancamento
+  --flan.historico
 FROM flan
 LEFT JOIN fcfo ON fcfo.codcfo = flan.codcfo
 LEFT JOIN Preferido_CentroCusto p ON p.idlan = flan.idlan
