@@ -151,7 +151,7 @@ app.get("/v1/centro-custo", async (req, res) => {
 
 function decodeBuffer(val) {
   if (!val) return null;
-  if (Buffer.isBuffer(val)) return iconv.decode(val, "win1252"); // ou 'latin1'
+  if (Buffer.isBuffer(val)) return iconv.decode(val, "latin1"); // ou 'latin1'
   return val; // se já for string
 }
 
