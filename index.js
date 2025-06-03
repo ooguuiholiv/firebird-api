@@ -226,60 +226,71 @@ LEFT JOIN fccusto ON fccusto.cod = p.ccusto_tratado;
 app.get("/v2/centro-custo", async (req, res) => {
   const sql = `
     WITH Preferido_CentroCusto AS (
-      SELECT
-        flan.idlan,
-        COALESCE(frc.ccusto, fe.ccusto, flan.ccusto) AS ccusto_tratado,
-        frc.ccusto AS rateio_de_cc,
-        CASE 
-          WHEN COALESCE(flan.historico, '') CONTAINING 'BAIXA PARCIAL' THEN flan.valorbaixado
-          WHEN COALESCE(flan.historico, '') CONTAINING 'IMP_RET' THEN flan.valorbaixado
-          ELSE frc.valor
-        END AS valor_cc,
-        flan.ccusto AS cc,
-        fe.ccusto AS cc_extrato
-      FROM flan
-      LEFT JOIN (
-        SELECT idlan, ccusto, valor
-        FROM flanratccusto
-        WHERE origem = 'L'
-      ) frc ON frc.idlan = flan.idlan
-      LEFT JOIN (
-        SELECT numerodocumento, cnpjcpf, ccusto
-        FROM fextrato
-      ) fe ON fe.numerodocumento = 
-        CASE 
-          WHEN flan.statuslan = 'B' THEN COALESCE(flan.numerodocumento, '') || '/' || COALESCE(CAST(flan.parcela AS VARCHAR(10)), '')
-          ELSE COALESCE(flan.numerodocumento, '')
-        END
-        AND fe.cnpjcpf = flan.codcfo
-    )
-    SELECT 
-      flan.datavencimento, 
-      flan.databaixa,
-      CASE 
-        WHEN flan.statuslan = 'B' THEN COALESCE(flan.numerodocumento, '') || '/' || COALESCE(CAST(flan.parcela AS VARCHAR(10)), '')
-        ELSE COALESCE(flan.numerodocumento, '')
-      END AS numerodocumento, 
-      flan.parcela,
-      fcfo.nomefantasia,
-      fcfo.cgccfo AS CNPJ_CPF, 
-      flan.valororiginal,
-      flan.valorbaixado,
-      p.rateio_de_cc AS Rateio_de_CC,
-      p.valor_cc AS VALOR_CC,
-      p.cc AS CC,
-      p.cc_extrato AS CC_extrato,
-      p.ccusto_tratado AS CC_tratado,
-      CASE 
-        WHEN flan.pagrec = 'P' THEN 'PAGAR'
-        WHEN flan.pagrec = 'R' THEN 'RECEBER'
-        ELSE 'DESCONHECIDO' 
-      END AS Tipo_Transacao,
-      flan.statuslan AS Status_do_lancamento
-    FROM flan
-    LEFT JOIN fcfo ON fcfo.codcfo = flan.codcfo
-    LEFT JOIN Preferido_CentroCusto p ON p.idlan = flan.idlan
-    LEFT JOIN fccusto ON fccusto.cod = p.ccusto_tratado;
+  SELECT
+    flan.idlan,
+    CASE 
+      WHEN frc.ccusto IS NOT NULL THEN frc.ccusto
+      WHEN fe.ccusto IS NOT NULL THEN fe.ccusto
+      ELSE flan.ccusto
+    END AS ccusto_tratado,
+    frc.ccusto AS rateio_de_cc,
+    CASE 
+      WHEN (CASE WHEN flan.historico IS NULL THEN '' ELSE flan.historico END) CONTAINING 'BAIXA PARCIAL' THEN flan.valorbaixado
+      WHEN (CASE WHEN flan.historico IS NULL THEN '' ELSE flan.historico END) CONTAINING 'IMP_RET' THEN flan.valorbaixado
+      ELSE frc.valor
+    END AS valor_cc,
+    flan.ccusto AS cc,
+    fe.ccusto AS cc_extrato
+  FROM flan
+  LEFT JOIN (
+    SELECT idlan, ccusto, valor
+    FROM flanratccusto
+    WHERE origem = 'L'
+  ) frc ON frc.idlan = flan.idlan
+  LEFT JOIN (
+    SELECT numerodocumento, cnpjcpf, ccusto
+    FROM fextrato
+  ) fe ON fe.numerodocumento = 
+    CASE 
+      WHEN flan.statuslan = 'B' THEN 
+        CASE WHEN flan.numerodocumento IS NULL THEN '' ELSE flan.numerodocumento END || '/' || 
+        CASE WHEN flan.parcela IS NULL THEN '' ELSE CAST(flan.parcela AS VARCHAR(10)) END
+      ELSE 
+        CASE WHEN flan.numerodocumento IS NULL THEN '' ELSE flan.numerodocumento END
+    END
+    AND fe.cnpjcpf = flan.codcfo
+)
+SELECT 
+  flan.datavencimento, 
+  flan.databaixa,
+  CASE 
+    WHEN flan.statuslan = 'B' THEN 
+      CASE WHEN flan.numerodocumento IS NULL THEN '' ELSE flan.numerodocumento END || '/' || 
+      CASE WHEN flan.parcela IS NULL THEN '' ELSE CAST(flan.parcela AS VARCHAR(10)) END
+    ELSE 
+      CASE WHEN flan.numerodocumento IS NULL THEN '' ELSE flan.numerodocumento END
+  END AS numerodocumento, 
+  flan.parcela,
+  fcfo.nomefantasia,
+  fcfo.cgccfo AS CNPJ_CPF, 
+  flan.valororiginal,
+  flan.valorbaixado,
+  p.rateio_de_cc AS Rateio_de_CC,
+  p.valor_cc AS VALOR_CC,
+  p.cc AS CC,
+  p.cc_extrato AS CC_extrato,
+  p.ccusto_tratado AS CC_tratado,
+  CASE 
+    WHEN flan.pagrec = 'P' THEN 'PAGAR'
+    WHEN flan.pagrec = 'R' THEN 'RECEBER'
+    ELSE 'DESCONHECIDO' 
+  END AS Tipo_Transacao,
+  flan.statuslan AS Status_do_lancamento
+FROM flan
+LEFT JOIN fcfo ON fcfo.codcfo = flan.codcfo
+LEFT JOIN Preferido_CentroCusto p ON p.idlan = flan.idlan
+LEFT JOIN fccusto ON fccusto.cod = p.ccusto_tratado;
+
   `;
 
   console.log(`Rota /v2/centro-custo acessada. Origin: ${req.get("origin")}`);
