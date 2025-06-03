@@ -204,9 +204,9 @@ SELECT
         ELSE 'DESCONHECIDO' 
     END AS Tipo_Transacao,
 
-    fccusto.descricao AS Descricao_Centro_Custo,
+    -- fccusto.descricao AS Descricao_Centro_Custo,
     flan.statuslan AS Status_do_lancamento,
-    flan.historico
+    -- flan.historico
 
 FROM flan
 LEFT JOIN fcfo ON fcfo.codcfo = flan.codcfo
@@ -286,9 +286,9 @@ SELECT
         ELSE 'DESCONHECIDO' 
     END AS Tipo_Transacao,
 
-    fccusto.descricao AS Descricao_Centro_Custo,
+    -- fccusto.descricao AS Descricao_Centro_Custo,
     flan.statuslan AS Status_do_lancamento,
-    flan.historico
+  -- flan.historico
 
 FROM flan
 LEFT JOIN fcfo ON fcfo.codcfo = flan.codcfo
