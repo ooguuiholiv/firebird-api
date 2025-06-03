@@ -21,4 +21,4 @@ RUN npm install
 EXPOSE 7000
 
 # Inicia a aplicação
-CMD ["npm", "start"]
+CMD ["npm", "run", "start"]
