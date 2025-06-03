@@ -9,7 +9,7 @@ const options = {
   database: process.env.FB_DATABASE,
   user: process.env.FB_USER,
   password: process.env.FB_PASSWORD,
-  charset: "UTF8",
+  charset: "none",
   lowercase_keys: false,
   role: null,
   pageSize: 4096,
