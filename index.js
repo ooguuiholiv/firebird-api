@@ -172,11 +172,8 @@ app.get("/v1/centro-custo", async (req, res) => {
     FROM fextrato
   ) fe ON fe.numerodocumento = 
     CASE 
-      WHEN flan.statuslan = 'B' THEN CONCAT(
-        COALESCE(flan.numerodocumento, ''),
-        '/',
-        COALESCE(CAST(flan.parcela AS VARCHAR(10)), '')
-      )
+      WHEN flan.statuslan = 'B' THEN
+        COALESCE(flan.numerodocumento, '') || '/' || COALESCE(CAST(flan.parcela AS CHAR(10)), '')
       ELSE COALESCE(flan.numerodocumento, '')
     END
     AND fe.cnpjcpf = flan.codcfo
@@ -185,11 +182,8 @@ SELECT
   flan.datavencimento, 
   flan.databaixa,
   CASE 
-    WHEN flan.statuslan = 'B' THEN CONCAT(
-      COALESCE(flan.numerodocumento, ''),
-      '/',
-      COALESCE(CAST(flan.parcela AS VARCHAR(10)), '')
-    )
+    WHEN flan.statuslan = 'B' THEN
+      COALESCE(flan.numerodocumento, '') || '/' || COALESCE(CAST(flan.parcela AS CHAR(10)), '')
     ELSE COALESCE(flan.numerodocumento, '')
   END AS numerodocumento, 
   flan.parcela,
