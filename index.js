@@ -3,6 +3,7 @@ import { queryFirebird } from "./db.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import { readFile } from "fs/promises";
+import iconv from "iconv-lite";
 
 dotenv.config();
 
@@ -115,12 +116,30 @@ app.get("/contratos", async (req, res) => {
 
 
 app.get("/v1/centro-custo", async (req, res) => {
-  const sql = await readFile('./consultas/centro-custo.sql', 'utf8')
+  const sql = await readFile("./consultas/centro-custo.sql", "utf8");
   console.log(`Rota /v1/centro-custo acessada. Origin: ${req.get("origin")}`);
+
   try {
-    const dados = await queryFirebird(sql);
+    const dadosRaw = await queryFirebird(sql);
+
+    const dados = dadosRaw.map((row) => {
+      // convertendo os campos que costumam quebrar
+      return {
+        ...row,
+        nomefantasia: decodeBuffer(row.nomefantasia),
+        numerodocumento: decodeBuffer(row.numerodocumento),
+        ccusto_tratado: decodeBuffer(row.ccusto_tratado),
+        rateio_de_cc: decodeBuffer(row.rateio_de_cc),
+        cc: decodeBuffer(row.cc),
+        cc_extrato: decodeBuffer(row.cc_extrato),
+        // adiciona outros campos problemáticos aqui
+      };
+    });
+
     res.json(
-      dados.length ? { dados } : { message: "Nenhum centro de custo encontrado." }
+      dados.length
+        ? { dados }
+        : { message: "Nenhum centro de custo encontrado." }
     );
   } catch (err) {
     console.error("Erro em /v1/centro-custo:", err.message);
@@ -130,6 +149,11 @@ app.get("/v1/centro-custo", async (req, res) => {
   }
 });
 
+function decodeBuffer(val) {
+  if (!val) return null;
+  if (Buffer.isBuffer(val)) return iconv.decode(val, "win1252"); // ou 'latin1'
+  return val; // se já for string
+}
 
 const port = process.env.PORT || 3000;
 app.listen(port, () =>
