@@ -114,6 +114,21 @@ app.get("/contratos", async (req, res) => {
   }
 });
 
+app.get("/gastos-contratos", async (req, res) => {
+  const sql = await readFile('./consultas/gastos_contratos.sql', 'utf8');
+
+  console.log(`Rota /gastos-contratos acessada. Origin: ${req.get("origin")}`); 
+  try {
+    const dados = await queryFirebird(sql);
+    res.json(dados.length ? dados : { message: "Nenhum contrato encontrado." });
+  } catch (err) {
+    console.error("Erro em /gastos-contratos:", err.message);
+    res
+      .status(500)
+      .json({ error: "Erro ao consultar banco.", details: err.message });
+  }
+});
+
 
 app.get("/v1/centro-custo", async (req, res) => {
   const sql = await readFile("./consultas/centro-custo.sql", "utf8");
