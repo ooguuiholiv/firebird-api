@@ -18,6 +18,7 @@ const corsOptions = {
     "https://api.sprig.com/sdk/1/visitors/0a91641e-112b-4a53-9ab2-67e7d6300b07/events",
     "https://api.segment.io/v1/m",
     "https://funcionarios-search.francosys.com.br",
+    "https://mbaconstrutoracombr.sharepoint.com",
   ],
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -36,6 +37,7 @@ const allowedOrigin = [
   "https://api.sprig.com/sdk/1/visitors/0a91641e-112b-4a53-9ab2-67e7d6300b07/events",
   "https://api.segment.io/v1/m",
   "https://funcionarios-search.francosys.com.br",
+  "https://mbaconstrutoracombr.sharepoint.com",
 ];
 
 app.use((req, res, next) => {
