@@ -168,6 +168,40 @@ app.get("/v1/centro-custo", async (req, res) => {
   }
 });
 
+app.get("/material-aplicado-obra", async (req, res) => {
+  const sql = await readFile("./consultas/material_aplicado_na_obra.sql", "utf8");
+  const { data_inicio, data_fim, numero_contrato, serie } = req.query;
+
+  if (!data_inicio || !data_fim || !numero_contrato || !serie) {
+    return res.status(400).json({ error: "Faltam parâmetros obrigatórios: data_inicio, data_fim, numero_contrato, serie" });
+  }
+
+  const params = [data_inicio, data_fim, numero_contrato, serie];
+  console.log(`Rota /material-aplicado-obra acessada. Origin: ${req.get("origin")}`);
+
+  try {
+    const dadosRaw = await queryFirebird(sql, params);
+
+    const dados = dadosRaw.map((row) => {
+      return {
+        ...row,
+        NOME_CLIENTE: decodeBuffer(row.NOME_CLIENTE),
+        FAN_CLIENTE: decodeBuffer(row.FAN_CLIENTE),
+        CIDADE: decodeBuffer(row.CIDADE),
+        PRODUTO: decodeBuffer(row.PRODUTO),
+        UNIDADE: decodeBuffer(row.UNIDADE),
+        FORNECEDOR_ORIGEM: decodeBuffer(row.FORNECEDOR_ORIGEM),
+      };
+    });
+
+    res.json(dados.length ? dados : { message: "Nenhum material encontrado." });
+  } catch (err) {
+    console.error("Erro em /material-aplicado-obra:", err.message);
+    res.status(500).json({ error: "Erro ao consultar banco.", details: err.message });
+  }
+});
+
+
 function decodeBuffer(val) {
   if (!val) return null;
   if (Buffer.isBuffer(val)) return iconv.decode(val, "latin1"); // ou 'latin1'

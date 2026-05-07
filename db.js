@@ -15,12 +15,12 @@ const options = {
   pageSize: 4096,
 };
 
-export async function queryFirebird(sql) {
+export async function queryFirebird(sql, params = []) {
   return new Promise((resolve, reject) => {
     Firebird.attach(options, (err, db) => {
       if (err) return reject(err);
 
-      db.query(sql, (err, result) => {
+      db.query(sql, params, (err, result) => {
         if (err) {
           db.detach();
           return reject(err);
