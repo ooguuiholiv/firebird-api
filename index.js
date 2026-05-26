@@ -238,6 +238,43 @@ app.get("/lancamentos", async (req, res) => {
   }
 });
 
+app.get("/pagamentos", async (req, res) => {
+  const sql = await readFile("./consultas/pagamentos.sql", "utf8");
+  const { data_inicio, data_fim } = req.query;
+
+  if (!data_inicio || !data_fim) {
+    return res.status(400).json({ error: "Faltam parâmetros obrigatórios: data_inicio, data_fim" });
+  }
+
+  const params = [data_inicio, data_fim];
+  console.log(`Rota /pagamentos acessada. Origin: ${req.get("origin")}`);
+
+  try {
+    const dadosRaw = await queryFirebird(sql, params);
+
+    const dados = dadosRaw.map((row) => {
+      return {
+        ...row,
+        NUMERODOCUMENTO: decodeBuffer(row.NUMERODOCUMENTO),
+        PARCELA: decodeBuffer(row.PARCELA),
+        TIPO: decodeBuffer(row.TIPO),
+        CONTA_CAIXA: decodeBuffer(row.CONTA_CAIXA),
+        CCUSTO: decodeBuffer(row.CCUSTO),
+        DESCRICAO: decodeBuffer(row.DESCRICAO),
+        CODCFO: decodeBuffer(row.CODCFO),
+        NOME: decodeBuffer(row.NOME),
+        HISTORICO: decodeBuffer(row.HISTORICO),
+      };
+    });
+
+    res.json(dados.length ? dados : { message: "Nenhum pagamento encontrado." });
+  } catch (err) {
+    console.error("Erro em /pagamentos:", err.message);
+    res.status(500).json({ error: "Erro ao consultar banco.", details: err.message });
+  }
+});
+
+
 function decodeBuffer(val) {
   if (!val) return null;
   if (Buffer.isBuffer(val)) return iconv.decode(val, "latin1"); // ou 'latin1'
