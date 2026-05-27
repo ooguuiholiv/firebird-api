@@ -333,6 +333,38 @@ app.get("/statuslan", async (req, res) => {
   }
 });
 
+app.get("/vr-aberto", async (req, res) => {
+  const sql = await readFile("./consultas/vr_aberto.sql", "utf8");
+  const { nomefantasia } = req.query;
+
+  const busca = nomefantasia || "";
+  const params = [busca];
+  console.log(`Rota /vr-aberto acessada. Origin: ${req.get("origin")}`);
+
+  try {
+    const dadosRaw = await queryFirebird(sql, params);
+
+    const dados = dadosRaw.map((row) => {
+      return {
+        ...row,
+        NUMERODOCUMENTO: decodeBuffer(row.NUMERODOCUMENTO),
+        NOMEFANTASIA: decodeBuffer(row.NOMEFANTASIA),
+        STATUSLAN: decodeBuffer(row.STATUSLAN),
+        HISTORICO: decodeBuffer(row.HISTORICO),
+      };
+    });
+
+    res.json(
+      dados.length ? dados : { message: "Nenhum lançamento em aberto encontrado." },
+    );
+  } catch (err) {
+    console.error("Erro em /vr-aberto:", err.message);
+    res
+      .status(500)
+      .json({ error: "Erro ao consultar banco.", details: err.message });
+  }
+});
+
 function decodeBuffer(val) {
   if (!val) return null;
   if (Buffer.isBuffer(val)) return iconv.decode(val, "latin1"); // ou 'latin1'
