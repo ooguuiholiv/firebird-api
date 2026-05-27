@@ -298,7 +298,7 @@ app.get("/pagamentos", async (req, res) => {
 
 app.get("/statuslan", async (req, res) => {
   const sql = await readFile("./consultas/statuslan.sql", "utf8");
-  const { numerodocumento } = req.query;
+  const { numerodocumento, nomefantasia } = req.query;
 
   if (!numerodocumento) {
     return res
@@ -306,7 +306,8 @@ app.get("/statuslan", async (req, res) => {
       .json({ error: "Faltam parâmetros obrigatórios: numerodocumento" });
   }
 
-  const params = [numerodocumento];
+  const buscaNome = nomefantasia ? `%${nomefantasia}%` : "%";
+  const params = [numerodocumento, buscaNome];
   console.log(`Rota /statuslan acessada. Origin: ${req.get("origin")}`);
 
   try {
