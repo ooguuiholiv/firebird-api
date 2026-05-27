@@ -6,5 +6,5 @@ SELECT
     flan.historico 
 FROM flan
 LEFT JOIN fcfo ON flan.codcfo = fcfo.codcfo 
-WHERE fcfo.nomefantasia LIKE '%' + ? + '%'
+WHERE fcfo.nomefantasia LIKE ?
   AND flan.statuslan = 'A'
