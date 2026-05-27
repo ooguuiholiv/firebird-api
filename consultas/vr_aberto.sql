@@ -8,3 +8,4 @@ FROM flan
 LEFT JOIN fcfo ON flan.codcfo = fcfo.codcfo 
 WHERE fcfo.nomefantasia LIKE ?
   AND flan.statuslan = 'A'
+  AND flan.codtdo <> 'PRE'
