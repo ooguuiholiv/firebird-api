@@ -175,12 +175,10 @@ app.get("/material-aplicado-obra", async (req, res) => {
   const { data_inicio, data_fim, numero_contrato, serie } = req.query;
 
   if (!data_inicio || !data_fim || !numero_contrato || !serie) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Faltam parâmetros obrigatórios: data_inicio, data_fim, numero_contrato, serie",
-      });
+    return res.status(400).json({
+      error:
+        "Faltam parâmetros obrigatórios: data_inicio, data_fim, numero_contrato, serie",
+    });
   }
 
   const params = [data_inicio, data_fim, numero_contrato, serie];
@@ -306,8 +304,7 @@ app.get("/statuslan", async (req, res) => {
       .json({ error: "Faltam parâmetros obrigatórios: numerodocumento" });
   }
 
-  const buscaNome = nomefantasia ? `%${nomefantasia}%` : "%";
-  const params = [numerodocumento, buscaNome];
+  const params = [numerodocumento, nomefantasia];
   console.log(`Rota /statuslan acessada. Origin: ${req.get("origin")}`);
 
   try {
@@ -319,6 +316,7 @@ app.get("/statuslan", async (req, res) => {
         NUMERODOCUMENTO: decodeBuffer(row.NUMERODOCUMENTO),
         NOMEFANTASIA: decodeBuffer(row.NOMEFANTASIA),
         STATUSLAN: decodeBuffer(row.STATUSLAN),
+        DATABAIXA: decodeBuffer(row.DATABAIXA),
         HISTORICO: decodeBuffer(row.HISTORICO),
       };
     });
@@ -356,7 +354,9 @@ app.get("/vr-aberto", async (req, res) => {
     });
 
     res.json(
-      dados.length ? dados : { message: "Nenhum lançamento em aberto encontrado." },
+      dados.length
+        ? dados
+        : { message: "Nenhum lançamento em aberto encontrado." },
     );
   } catch (err) {
     console.error("Erro em /vr-aberto:", err.message);
