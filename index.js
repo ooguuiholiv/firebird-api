@@ -45,8 +45,8 @@ app.use((req, res, next) => {
   if (!allowedOrigin.includes(requestOrigin)) {
     console.warn(
       `Bloqueado acesso não autorizado. Origin recebido: "${requestOrigin}". Referer: "${req.get(
-        "referer"
-      )}". IP: ${req.ip}`
+        "referer",
+      )}". IP: ${req.ip}`,
     );
     return res.status(403).json({ error: "Acesso não autorizado." });
   }
@@ -57,7 +57,7 @@ app.use((req, res, next) => {
 app.get("/clientes", async (req, res) => {
   const sql = await readFile("./consultas/clientes.sql", "utf8");
 
-  console.log(`Rota /clientes acessada. Origin: ${req.get("origin")}`); 
+  console.log(`Rota /clientes acessada. Origin: ${req.get("origin")}`);
   try {
     const dados = await queryFirebird(sql);
     res.json(dados.length ? dados : { message: "Nenhum cliente encontrado." });
@@ -69,14 +69,15 @@ app.get("/clientes", async (req, res) => {
   }
 });
 
-
 app.get("/alertas", async (req, res) => {
   const sql = await readFile("./consultas/alertas.sql", "utf8");
 
   console.log(`Rota /alertas acessada. Origin: ${req.get("origin")}`);
   try {
     const dados = await queryFirebird(sql);
-    res.json(dados.length ? {dados} : { message: "Nenhum alerta encontrado." });
+    res.json(
+      dados.length ? { dados } : { message: "Nenhum alerta encontrado." },
+    );
   } catch (err) {
     console.error("Erro em /alertas:", err.message);
     res
@@ -85,15 +86,14 @@ app.get("/alertas", async (req, res) => {
   }
 });
 
-
 app.get("/funcionarios", async (req, res) => {
   const sql = await readFile("./consultas/funcionarios.sql", "utf8");
 
-  console.log(`Rota /funcionarios acessada. Origin: ${req.get("origin")}`); 
+  console.log(`Rota /funcionarios acessada. Origin: ${req.get("origin")}`);
   try {
     const dados = await queryFirebird(sql);
     res.json(
-      dados.length ? dados : { message: "Nenhum funcionário encontrado." }
+      dados.length ? dados : { message: "Nenhum funcionário encontrado." },
     );
   } catch (err) {
     console.error("Erro em /funcionarios:", err.message);
@@ -104,9 +104,9 @@ app.get("/funcionarios", async (req, res) => {
 });
 
 app.get("/contratos", async (req, res) => {
-  const sql = await readFile('./consultas/contratos.sql', 'utf8');
+  const sql = await readFile("./consultas/contratos.sql", "utf8");
 
-  console.log(`Rota /contratos acessada. Origin: ${req.get("origin")}`); 
+  console.log(`Rota /contratos acessada. Origin: ${req.get("origin")}`);
   try {
     const dados = await queryFirebird(sql);
     res.json(dados.length ? dados : { message: "Nenhum contrato encontrado." });
@@ -119,9 +119,9 @@ app.get("/contratos", async (req, res) => {
 });
 
 app.get("/gastos-contratos", async (req, res) => {
-  const sql = await readFile('./consultas/gastos_contratos.sql', 'utf8');
+  const sql = await readFile("./consultas/gastos_contratos.sql", "utf8");
 
-  console.log(`Rota /gastos-contratos acessada. Origin: ${req.get("origin")}`); 
+  console.log(`Rota /gastos-contratos acessada. Origin: ${req.get("origin")}`);
   try {
     const dados = await queryFirebird(sql);
     res.json(dados.length ? dados : { message: "Nenhum contrato encontrado." });
@@ -132,7 +132,6 @@ app.get("/gastos-contratos", async (req, res) => {
       .json({ error: "Erro ao consultar banco.", details: err.message });
   }
 });
-
 
 app.get("/v1/centro-custo", async (req, res) => {
   const sql = await readFile("./consultas/centro-custo.sql", "utf8");
@@ -158,7 +157,7 @@ app.get("/v1/centro-custo", async (req, res) => {
     res.json(
       dados.length
         ? { dados }
-        : { message: "Nenhum centro de custo encontrado." }
+        : { message: "Nenhum centro de custo encontrado." },
     );
   } catch (err) {
     console.error("Erro em /v1/centro-custo:", err.message);
@@ -169,15 +168,25 @@ app.get("/v1/centro-custo", async (req, res) => {
 });
 
 app.get("/material-aplicado-obra", async (req, res) => {
-  const sql = await readFile("./consultas/material_aplicado_na_obra.sql", "utf8");
+  const sql = await readFile(
+    "./consultas/material_aplicado_na_obra.sql",
+    "utf8",
+  );
   const { data_inicio, data_fim, numero_contrato, serie } = req.query;
 
   if (!data_inicio || !data_fim || !numero_contrato || !serie) {
-    return res.status(400).json({ error: "Faltam parâmetros obrigatórios: data_inicio, data_fim, numero_contrato, serie" });
+    return res
+      .status(400)
+      .json({
+        error:
+          "Faltam parâmetros obrigatórios: data_inicio, data_fim, numero_contrato, serie",
+      });
   }
 
   const params = [data_inicio, data_fim, numero_contrato, serie];
-  console.log(`Rota /material-aplicado-obra acessada. Origin: ${req.get("origin")}`);
+  console.log(
+    `Rota /material-aplicado-obra acessada. Origin: ${req.get("origin")}`,
+  );
 
   try {
     const dadosRaw = await queryFirebird(sql, params);
@@ -197,17 +206,20 @@ app.get("/material-aplicado-obra", async (req, res) => {
     res.json(dados.length ? dados : { message: "Nenhum material encontrado." });
   } catch (err) {
     console.error("Erro em /material-aplicado-obra:", err.message);
-    res.status(500).json({ error: "Erro ao consultar banco.", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Erro ao consultar banco.", details: err.message });
   }
 });
-
 
 app.get("/lancamentos", async (req, res) => {
   const sql = await readFile("./consultas/lancamentos.sql", "utf8");
   const { data_inicio, data_fim } = req.query;
 
   if (!data_inicio || !data_fim) {
-    return res.status(400).json({ error: "Faltam parâmetros obrigatórios: data_inicio, data_fim" });
+    return res
+      .status(400)
+      .json({ error: "Faltam parâmetros obrigatórios: data_inicio, data_fim" });
   }
 
   const params = [data_inicio, data_fim];
@@ -231,10 +243,14 @@ app.get("/lancamentos", async (req, res) => {
       };
     });
 
-    res.json(dados.length ? dados : { message: "Nenhum lançamento encontrado." });
+    res.json(
+      dados.length ? dados : { message: "Nenhum lançamento encontrado." },
+    );
   } catch (err) {
     console.error("Erro em /lancamentos:", err.message);
-    res.status(500).json({ error: "Erro ao consultar banco.", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Erro ao consultar banco.", details: err.message });
   }
 });
 
@@ -243,7 +259,9 @@ app.get("/pagamentos", async (req, res) => {
   const { data_inicio, data_fim } = req.query;
 
   if (!data_inicio || !data_fim) {
-    return res.status(400).json({ error: "Faltam parâmetros obrigatórios: data_inicio, data_fim" });
+    return res
+      .status(400)
+      .json({ error: "Faltam parâmetros obrigatórios: data_inicio, data_fim" });
   }
 
   const params = [data_inicio, data_fim];
@@ -267,13 +285,53 @@ app.get("/pagamentos", async (req, res) => {
       };
     });
 
-    res.json(dados.length ? dados : { message: "Nenhum pagamento encontrado." });
+    res.json(
+      dados.length ? dados : { message: "Nenhum pagamento encontrado." },
+    );
   } catch (err) {
     console.error("Erro em /pagamentos:", err.message);
-    res.status(500).json({ error: "Erro ao consultar banco.", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Erro ao consultar banco.", details: err.message });
   }
 });
 
+app.get("/statuslan", async (req, res) => {
+  const sql = await readFile("./consultas/statuslan.sql", "utf8");
+  const { numerodocumento } = req.query;
+
+  if (!numerodocumento) {
+    return res
+      .status(400)
+      .json({ error: "Faltam parâmetros obrigatórios: numerodocumento" });
+  }
+
+  const params = [numerodocumento];
+  console.log(`Rota /statuslan acessada. Origin: ${req.get("origin")}`);
+
+  try {
+    const dadosRaw = await queryFirebird(sql, params);
+
+    const dados = dadosRaw.map((row) => {
+      return {
+        ...row,
+        NUMERODOCUMENTO: decodeBuffer(row.NUMERODOCUMENTO),
+        NOMEFANTASIA: decodeBuffer(row.NOMEFANTASIA),
+        STATUSLAN: decodeBuffer(row.STATUSLAN),
+        HISTORICO: decodeBuffer(row.HISTORICO),
+      };
+    });
+
+    res.json(
+      dados.length ? dados : { message: "Nenhum lançamento encontrado." },
+    );
+  } catch (err) {
+    console.error("Erro em /statuslan:", err.message);
+    res
+      .status(500)
+      .json({ error: "Erro ao consultar banco.", details: err.message });
+  }
+});
 
 function decodeBuffer(val) {
   if (!val) return null;
@@ -283,5 +341,5 @@ function decodeBuffer(val) {
 
 const port = process.env.PORT || 3000;
 app.listen(port, () =>
-  console.log(`🔥 API rodando em http://localhost:${port}`)
+  console.log(`🔥 API rodando em http://localhost:${port}`),
 );
