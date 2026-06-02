@@ -2,7 +2,9 @@ SELECT
     flan.numerodocumento, 
     fcfo.nomefantasia, 
     flan.valororiginal, 
-    flan.statuslan, 
+    flan.statuslan,
+    flan.datavencimento,
+    flan.databaixa, 
     flan.historico 
 FROM flan
 LEFT JOIN fcfo ON flan.codcfo = fcfo.codcfo 
