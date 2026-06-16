@@ -346,9 +346,11 @@ app.get("/statuslan", async (req, res) => {
   if (/^\d+$/.test(termo)) {
     busca = formatCpfCnpj(termo);
   }
-  const buscaParam = busca ? `%${busca}%` : "%";
+  const buscaParam = busca ? `%${busca.toUpperCase()}%` : "%";
+  const buscaApenasNumeros = termo.replace(/\D/g, "");
+  const buscaNumerosParam = buscaApenasNumeros ? `%${buscaApenasNumeros}%` : "%";
 
-  const params = [numerodocumento, buscaParam, buscaParam];
+  const params = [numerodocumento, buscaParam, buscaParam, buscaNumerosParam];
   console.log(`Rota /statuslan acessada. Origin: ${req.get("origin")}`);
 
   try {
@@ -385,9 +387,11 @@ app.get("/vr-aberto", async (req, res) => {
   if (/^\d+$/.test(termo)) {
     busca = formatCpfCnpj(termo);
   }
-  const buscaParam = busca ? `%${busca}%` : "%";
+  const buscaParam = busca ? `%${busca.toUpperCase()}%` : "%";
+  const buscaApenasNumeros = termo.replace(/\D/g, "");
+  const buscaNumerosParam = buscaApenasNumeros ? `%${buscaApenasNumeros}%` : "%";
 
-  const params = [buscaParam, buscaParam];
+  const params = [buscaParam, buscaParam, buscaNumerosParam];
   console.log(`Rota /vr-aberto acessada. Origin: ${req.get("origin")}`);
 
   try {
