@@ -69,6 +69,43 @@ app.get("/clientes", async (req, res) => {
   }
 });
 
+app.get("/fornecedores", async (req, res) => {
+  const sql = await readFile("./consultas/fornecedores.sql", "utf8");
+  const { cpf_cnpj, cgccfo } = req.query;
+
+  let valorBusca = cpf_cnpj || cgccfo;
+
+  if (!valorBusca) {
+    return res
+      .status(400)
+      .json({ error: "Faltam parâmetros obrigatórios: cpf_cnpj ou cgccfo" });
+  }
+
+  // Se o parâmetro contiver apenas números, formata como CPF ou CNPJ
+  if (/^\d+$/.test(valorBusca)) {
+    valorBusca = formatCpfCnpj(valorBusca);
+  }
+
+  const params = [valorBusca];
+  console.log(`Rota /fornecedores acessada. Origin: ${req.get("origin")}`);
+  try {
+    const dadosRaw = await queryFirebird(sql, params);
+    const dados = dadosRaw.map((row) => {
+      return {
+        ...row,
+        NOME_COMPLETO: decodeBuffer(row.NOME_COMPLETO),
+        CPF_CNPJ: decodeBuffer(row.CPF_CNPJ),
+      };
+    });
+    res.json(dados.length ? dados : { message: "Nenhum fornecedor encontrado." });
+  } catch (err) {
+    console.error("Erro em /fornecedores:", err.message);
+    res
+      .status(500)
+      .json({ error: "Erro ao consultar banco.", details: err.message });
+  }
+});
+
 app.get("/alertas", async (req, res) => {
   const sql = await readFile("./consultas/alertas.sql", "utf8");
 
@@ -370,6 +407,16 @@ function decodeBuffer(val) {
   if (!val) return null;
   if (Buffer.isBuffer(val)) return iconv.decode(val, "latin1"); // ou 'latin1'
   return val; // se já for string
+}
+
+function formatCpfCnpj(value) {
+  const clean = value.replace(/\D/g, "");
+  if (clean.length === 11) {
+    return clean.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  } else if (clean.length === 14) {
+    return clean.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+  }
+  return value;
 }
 
 const port = process.env.PORT || 3000;
