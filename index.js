@@ -333,7 +333,7 @@ app.get("/pagamentos", async (req, res) => {
 
 app.get("/statuslan", async (req, res) => {
   const sql = await readFile("./consultas/statuslan.sql", "utf8");
-  const { numerodocumento, nomefantasia } = req.query;
+  const { numerodocumento, nomefantasia, cnpj, cpf_cnpj } = req.query;
 
   if (!numerodocumento) {
     return res
@@ -341,7 +341,14 @@ app.get("/statuslan", async (req, res) => {
       .json({ error: "Faltam parâmetros obrigatórios: numerodocumento" });
   }
 
-  const params = [numerodocumento, nomefantasia];
+  const termo = nomefantasia || cnpj || cpf_cnpj || "";
+  let busca = termo;
+  if (/^\d+$/.test(termo)) {
+    busca = formatCpfCnpj(termo);
+  }
+  const buscaParam = busca ? `%${busca}%` : "%";
+
+  const params = [numerodocumento, buscaParam, buscaParam];
   console.log(`Rota /statuslan acessada. Origin: ${req.get("origin")}`);
 
   try {
@@ -371,10 +378,16 @@ app.get("/statuslan", async (req, res) => {
 
 app.get("/vr-aberto", async (req, res) => {
   const sql = await readFile("./consultas/vr_aberto.sql", "utf8");
-  const { nomefantasia } = req.query;
+  const { nomefantasia, cnpj, cpf_cnpj } = req.query;
 
-  const busca = nomefantasia || "";
-  const params = [busca];
+  const termo = nomefantasia || cnpj || cpf_cnpj || "";
+  let busca = termo;
+  if (/^\d+$/.test(termo)) {
+    busca = formatCpfCnpj(termo);
+  }
+  const buscaParam = busca ? `%${busca}%` : "%";
+
+  const params = [buscaParam, buscaParam];
   console.log(`Rota /vr-aberto acessada. Origin: ${req.get("origin")}`);
 
   try {
